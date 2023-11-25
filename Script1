@@ -13,16 +13,13 @@ class Lift:
             self.tasks.sort(key=lambda x: abs(x - self.current_floor))
 
             target_floor = self.tasks.pop(0)
-            passed_floors = 0
             while self.current_floor != target_floor:
                 if self.current_floor < target_floor:
                     self.current_floor += 1
                 else:
                     self.current_floor -= 1
-                passed_floors += 1
-                graph_representation = self.current_position_graph()
+                graph_representation = self.current_position_graph()  # Графическое представление текущего положения лифта
                 print(f"Текущее положение лифта в формате графа: {graph_representation}")
-                print(f"Оценка оставшихся циклов до завершения задач в очереди: {len(self.tasks) + 1}")  # Перемещение вывода
 
                 tasks_input = input("Введите номера этажей для лифта через запятую (или 'стоп' для завершения): ")
                 if tasks_input.lower() == 'стоп':
@@ -30,7 +27,6 @@ class Lift:
                 tasks = tasks_input.split(',')
                 self.add_tasks(tasks)
             print(f"Lift stopped at floor {self.current_floor}.")
-            print(f"Пройдено этажей: {passed_floors}")
         else:
             print("No more tasks for the lift.")
 
@@ -51,6 +47,7 @@ class Lift:
 
 lift = Lift()
 
+steps = 0
 stops = 0
 
 while True:
@@ -62,9 +59,12 @@ while True:
 
     lift.move()
 
+    steps += 1
     stops += 1
 
+    print(f"Пройдено шагов: {steps}")
     print(f"Остановок: {stops}")
     print(f"Задач в очереди: {lift.remaining_tasks_estimate()}")
+    print(f"Оценка оставшихся циклов до завершения задач в очереди: {lift.remaining_tasks_estimate() + stops}")
 
 print("Работа лифта завершена.")
