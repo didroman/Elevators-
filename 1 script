@@ -1,0 +1,33 @@
+def count_steps_and_stops(building_height, tasks):
+    current_floor = 1  # Начальный этаж - лифт находится на нулевом этаже
+    total_steps = 0  # Общее количество шагов
+    stops = set()  # Множество для хранения уникальных этажей, на которых были остановки
+    all_steps = [current_floor]  # Список для хранения всех шагов лифта
+
+    # Сортировка очереди заданий по близости к текущему положению лифта
+    tasks.sort(key=lambda x: abs(x - current_floor))
+
+    while tasks:  # Пока очередь заданий не пуста
+        next_stop = tasks.pop(0)  # Берем ближайшее задание из очереди
+        all_steps.append(next_stop)  # Добавляем этаж в список всех шагов
+
+        if next_stop == current_floor:  # Если этаж назначения совпадает с текущим этажем
+            stops.add(next_stop)  # Добавляем этаж в остановки
+        else:
+            total_steps += abs(next_stop - current_floor)  # Считаем шаги до следующего задания
+            stops.add(next_stop)  # Добавляем этаж в остановки
+            current_floor = next_stop  # Перемещаем лифт на этаж назначения
+
+        # После выполнения задания пересортировываем очередь заданий
+        tasks.sort(key=lambda x: abs(x - current_floor))
+
+    return total_steps, len(stops), all_steps  # Возвращаем общее количество шагов, количество уникальных остановок и список всех шагов
+
+# Пример использования:
+tasks_queue = [3, 7, 2, 8, 5]  # Очередь заданий для лифта
+height = 10  # Высота здания
+
+steps, stops, all_steps = count_steps_and_stops(height, tasks_queue)
+print(f"Общее количество шагов: {steps}")
+print(f"Количество остановок: {stops}")
+print(f"Список всех шагов: {all_steps}")
