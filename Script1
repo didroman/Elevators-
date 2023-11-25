@@ -1,33 +1,46 @@
 def count_steps_and_stops(building_height, tasks):
-    current_floor = 1  # Начальный этаж - лифт находится на нулевом этаже
+    current_floor = 0  # Начальный этаж - лифт находится на нулевом этаже
     total_steps = 0  # Общее количество шагов
     stops = set()  # Множество для хранения уникальных этажей, на которых были остановки
-    all_steps = [current_floor]  # Список для хранения всех шагов лифта
+    all_steps = []  # Список для хранения всех шагов лифта
 
     # Сортировка очереди заданий по близости к текущему положению лифта
     tasks.sort(key=lambda x: abs(x - current_floor))
 
     while tasks:  # Пока очередь заданий не пуста
         next_stop = tasks.pop(0)  # Берем ближайшее задание из очереди
-        all_steps.append(next_stop)  # Добавляем этаж в список всех шагов
 
-        if next_stop == current_floor:  # Если этаж назначения совпадает с текущим этажем
-            stops.add(next_stop)  # Добавляем этаж в остановки
+        # Добавляем перемещение лифта или остановку в список всех шагов
+        if next_stop == current_floor:
+            all_steps.append(f"{current_floor}-{current_floor}")  # Лифт останавливается на этаже
         else:
+            direction = (next_stop - current_floor) // abs(next_stop - current_floor)
+            for floor in range(current_floor, next_stop, direction):
+                all_steps.append(f"{floor}-{floor + direction}")  # Лифт перемещается между этажами
+                print(f"Лифт на {floor + direction}")  # Вывод текущего положения лифта
+            all_steps.append(f"{next_stop}-{next_stop}")  # Лифт останавливается на этаже
+            print(f"Лифт на {next_stop}")  # Вывод текущего положения лифта
             total_steps += abs(next_stop - current_floor)  # Считаем шаги до следующего задания
-            stops.add(next_stop)  # Добавляем этаж в остановки
             current_floor = next_stop  # Перемещаем лифт на этаж назначения
+            stops.add(next_stop)  # Добавляем этаж в остановки
 
-        # После выполнения задания пересортировываем очередь заданий
-        tasks.sort(key=lambda x: abs(x - current_floor))
+        # Запрос на пополнение массива очереди заданий после каждого цикла перемещения лифта
+        new_tasks = input("Введите новые задания для лифта через запятую (или нажмите Enter, чтобы продолжить): ")
+        if new_tasks:
+            new_tasks = list(map(int, new_tasks.split(',')))
+            tasks.extend(new_tasks)
+            tasks.sort(key=lambda x: abs(x - current_floor))
 
     return total_steps, len(stops), all_steps  # Возвращаем общее количество шагов, количество уникальных остановок и список всех шагов
 
-# Пример использования:
-tasks_queue = [3, 7, 2, 8, 5]  # Очередь заданий для лифта
+# Запрос массива очереди заданий у пользователя
+tasks_input = input("Введите начальную очередь заданий для лифта (через запятую): ")
+tasks_queue = list(map(int, tasks_input.split(',')))  # Преобразуем строку в список чисел
+
 height = 10  # Высота здания
 
 steps, stops, all_steps = count_steps_and_stops(height, tasks_queue)
 print(f"Общее количество шагов: {steps}")
 print(f"Количество остановок: {stops}")
-print(f"Список всех шагов: {all_steps}")
+print(f"Список всех шагов: {', '.join(all_steps)}")
+
