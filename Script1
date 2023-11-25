@@ -1,46 +1,71 @@
-def count_steps_and_stops(building_height, tasks):
-    current_floor = 0  # Начальный этаж - лифт находится на нулевом этаже
-    total_steps = 0  # Общее количество шагов
-    stops = set()  # Множество для хранения уникальных этажей, на которых были остановки
-    all_steps = []  # Список для хранения всех шагов лифта
+class Lift:
+    def __init__(self, current_floor=1):
+        self.current_floor = current_floor  # Текущий этаж лифта
+        self.tasks = []  # Очередь задач лифта
 
-    # Сортировка очереди заданий по близости к текущему положению лифта
-    tasks.sort(key=lambda x: abs(x - current_floor))
+    def add_tasks(self, tasks):
+        for task in tasks:
+            if task.strip():  # Проверка на пустую строку
+                self.tasks.append(int(task))  # Добавление задач в очередь лифта
 
-    while tasks:  # Пока очередь заданий не пуста
-        next_stop = tasks.pop(0)  # Берем ближайшее задание из очереди
+    def move(self):
+        if self.tasks:  # Если есть задачи в очереди
+            # Сортировка задач по расстоянию до текущего этажа лифта (используя эвристическую оценку)
+            self.tasks.sort(key=lambda x: abs(x - self.current_floor))
 
-        # Добавляем перемещение лифта или остановку в список всех шагов
-        if next_stop == current_floor:
-            all_steps.append(f"{current_floor}-{current_floor}")  # Лифт останавливается на этаже
+            target_floor = self.tasks.pop(0)  # Извлекаем первую задачу из очереди
+            while self.current_floor != target_floor:  # Пока не достигнут целевой этаж
+                if self.current_floor < target_floor:  # Если целевой этаж выше текущего
+                    self.current_floor += 1  # Поднимаем лифт на этаж выше
+                else:
+                    self.current_floor -= 1  # Иначе опускаем лифт на этаж ниже
+                print(f"Lift is on floor {self.current_floor}.")  # Вывод текущего этажа
+                tasks_input = input("Введите номера этажей для лифта через запятую (или 'стоп' для завершения): ")
+                if tasks_input.lower() == 'стоп':
+                    break
+                tasks = tasks_input.split(',')
+                self.add_tasks(tasks)  # Добавляем новые задачи в очередь
+
+            print(f"Lift stopped at floor {self.current_floor}.")  # Остановка лифта на целевом этаже
         else:
-            direction = (next_stop - current_floor) // abs(next_stop - current_floor)
-            for floor in range(current_floor, next_stop, direction):
-                all_steps.append(f"{floor}-{floor + direction}")  # Лифт перемещается между этажами
-                print(f"Лифт на {floor + direction}")  # Вывод текущего положения лифта
-            all_steps.append(f"{next_stop}-{next_stop}")  # Лифт останавливается на этаже
-            print(f"Лифт на {next_stop}")  # Вывод текущего положения лифта
-            total_steps += abs(next_stop - current_floor)  # Считаем шаги до следующего задания
-            current_floor = next_stop  # Перемещаем лифт на этаж назначения
-            stops.add(next_stop)  # Добавляем этаж в остановки
+            print("No more tasks for the lift.")  # Если задач в очереди нет
 
-        # Запрос на пополнение массива очереди заданий после каждого цикла перемещения лифта
-        new_tasks = input("Введите новые задания для лифта через запятую (или нажмите Enter, чтобы продолжить): ")
-        if new_tasks:
-            new_tasks = list(map(int, new_tasks.split(',')))
-            tasks.extend(new_tasks)
-            tasks.sort(key=lambda x: abs(x - current_floor))
+    def remaining_tasks_estimate(self):
+        return len(self.tasks)  # Возвращает количество задач в очереди
 
-    return total_steps, len(stops), all_steps  # Возвращаем общее количество шагов, количество уникальных остановок и список всех шагов
+    def current_position_graph(self):
+        floors = 10  # Общее количество этажей
+        graph = ""
+        for i in range(1, floors + 1):
+            if i == self.current_floor:
+                graph += f"({i})"  # Текущий этаж в скобках для графического представления
+            else:
+                graph += str(i)
+            if i != floors:
+                graph += "--"  # Разделитель между этажами в графе
+        return graph
 
-# Запрос массива очереди заданий у пользователя
-tasks_input = input("Введите начальную очередь заданий для лифта (через запятую): ")
-tasks_queue = list(map(int, tasks_input.split(',')))  # Преобразуем строку в список чисел
+lift = Lift()  # Создание экземпляра класса Lift
 
-height = 10  # Высота здания
+steps = 0  # Счетчик шагов
+stops = 0  # Счетчик остановок
 
-steps, stops, all_steps = count_steps_and_stops(height, tasks_queue)
-print(f"Общее количество шагов: {steps}")
-print(f"Количество остановок: {stops}")
-print(f"Список всех шагов: {', '.join(all_steps)}")
+while True:
+    tasks_input = input("Введите номера этажей для лифта через запятую (или 'стоп' для завершения): ")
+    if tasks_input.lower() == 'стоп':
+        break
+    tasks = tasks_input.split(',')  # Разделение введенных задач по запятой
+    lift.add_tasks(tasks)  # Добавление задач в очередь
 
+    lift.move()  # Выполнение задач лифтом
+
+    steps += 1  # Увеличение счетчика шагов
+    stops += 1  # Увеличение счетчика остановок
+
+    print(f"Пройдено шагов: {steps}")  # Вывод количества пройденных шагов
+    print(f"Остановок: {stops}")  # Вывод количества остановок
+    print(f"Задач в очереди: {lift.remaining_tasks_estimate()}")  # Вывод количества задач в очереди
+    print(f"Оценка оставшихся циклов до завершения задач в очереди: {lift.remaining_tasks_estimate() + stops}")  # Оценка оставшихся циклов до завершения всех задач
+    print(f"Текущее положение лифта в формате графа: {lift.current_position_graph()}")  # Графическое представление текущего положения лифта
+
+print("Работа лифта завершена.")
