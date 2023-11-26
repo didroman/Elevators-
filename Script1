@@ -8,27 +8,52 @@ class Lift:
             if task.strip():
                 self.tasks.append(int(task))
 
-    def move(self):
+    def closest_number(self, sequence, target):
+        # Функция для нахождения ближайшего числа к целевому числу в последовательности
+        closest = sequence[0] if sequence else None
+        min_difference = abs(target - closest) if closest is not None else None
+
+        for number in sequence:
+            difference = abs(target - number)
+            if difference < min_difference:
+                min_difference = difference
+                closest = number
+
+        return closest
+
+    def determine_direction(self):
         if self.tasks:
-            self.tasks.sort(key=lambda x: abs(x - self.current_floor))
+            # Находим ближайший этаж из списка задач к текущему этажу
+            closest_floor = self.closest_number(self.tasks, self.current_floor)
+            # Определяем направление движения лифта на основе ближайшего этажа
+            if closest_floor < self.current_floor:
+                return -1  # Двигаться вниз
+            elif closest_floor > self.current_floor:
+                return 1  # Двигаться вверх
+        return 0  # Нет задач или уже на нужном этаже
 
-            target_floor = self.tasks.pop(0)
-            while self.current_floor != target_floor:
-                if self.current_floor < target_floor:
-                    self.current_floor += 1
-                else:
-                    self.current_floor -= 1
-                graph_representation = self.current_position_graph()  # Графическое представление текущего положения лифта
-                print(f"Текущее положение лифта в формате графа: {graph_representation}")
+    def move(self):
+        while self.tasks:
+            direction = self.determine_direction()
 
-                tasks_input = input("Введите номера этажей для лифта через запятую (или 'стоп' для завершения): ")
-                if tasks_input.lower() == 'стоп':
-                    break
-                tasks = tasks_input.split(',')
-                self.add_tasks(tasks)
-            print(f"Lift stopped at floor {self.current_floor}.")
-        else:
-            print("No more tasks for the lift.")
+            if direction == 0:
+                print("Лифт прибыл на нужный этаж.")
+                break
+
+            self.current_floor += direction
+            graph_representation = self.current_position_graph()
+            print(f"Текущее положение лифта в формате графа: {graph_representation}")
+
+            tasks_input = input("Введите номера этажей для лифта через запятую (или 'стоп' для завершения): ")
+            if tasks_input.lower() == 'стоп':
+                break
+            tasks = tasks_input.split(',')
+            self.add_tasks(tasks)
+
+        print(f"Lift stopped at floor {self.current_floor}.")
+
+    # Остальные методы без изменений
+
 
     def remaining_tasks_estimate(self):
         return len(self.tasks)
@@ -65,6 +90,6 @@ while True:
     print(f"Пройдено шагов: {steps}")
     print(f"Остановок: {stops}")
     print(f"Задач в очереди: {lift.remaining_tasks_estimate()}")
-    print(f"Оценка оставшихся циклов до завершения задач в очереди (пока некорректная): {lift.remaining_tasks_estimate() + stops}")
+    print(f"Оценка оставшихся циклов до завершения задач в очереди: {lift.remaining_tasks_estimate() + stops}")
 
 print("Работа лифта завершена.")
